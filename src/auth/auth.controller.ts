@@ -13,17 +13,27 @@ import {
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { Request, Response } from 'express';
-import { Auth } from './decorators/jwt.decorator';
+import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
+  @Post('sign-up')
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
-  register(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.register(createAuthDto);
+  @ApiCreatedResponse()
+  async register(
+    @Body() createAuthDto: CreateAuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { refreshToken, ...user } =
+      await this.authService.register(createAuthDto);
+
+    this.authService.addRefreshTokenInCookie(res, refreshToken);
+
+    return user;
   }
 
   @Post('log-in')

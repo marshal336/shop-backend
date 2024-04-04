@@ -18,7 +18,7 @@ export class AuthService {
   ) {}
 
   private async createTokents(id: string) {
-    const payload = { userId: id };
+    const payload = { id: id };
     const accessToken = await this.jwt.signAsync(payload, {
       expiresIn: '1h',
     });

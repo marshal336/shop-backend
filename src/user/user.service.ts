@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateAuthDto } from 'src/auth/dto/create-auth.dto';
+import { UserDto } from './dto/create-user.dto';
+import { hash } from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -34,13 +36,29 @@ export class UserService {
     return user;
   }
 
-  async findOneById(id: string): Promise<User> {
-    const user = await this.prisma.user.findFirst({
+  async findOneById(id: string) {
+    const user = await this.prisma.user.findUnique({
       where: {
         id,
       },
     });
 
     return user;
+  }
+
+  async update(id: string, dto: UserDto) {
+    let data = dto;
+    if (data.password) {
+      data = { ...dto, password: await hash(data.password) };
+    }
+    const user = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data,
+    });
+    const { password, ...fullUser } = user;
+
+    return fullUser;
   }
 }
