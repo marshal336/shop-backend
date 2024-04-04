@@ -4,12 +4,13 @@ import { PrismaService } from 'prisma/prisma.service';
 import { CreateAuthDto } from 'src/auth/dto/create-auth.dto';
 import { UserDto } from './dto/create-user.dto';
 import { hash } from 'argon2';
+import { IGoogleResponse } from 'src/types/google-res';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createAuthDto: CreateAuthDto, password: string): Promise<User> {
+  async create(createAuthDto: CreateAuthDto, password?: string): Promise<User> {
     const isExist = await this.prisma.user.findFirst({
       where: {
         email: createAuthDto.email,
@@ -20,6 +21,23 @@ export class UserService {
       data: {
         email: createAuthDto.email,
         password,
+      },
+    });
+
+    return user;
+  }
+  async createGoogle(IGoogleResponse: IGoogleResponse): Promise<User> {
+    const isExist = await this.prisma.user.findFirst({
+      where: {
+        email: IGoogleResponse.email,
+      },
+    });
+    if (isExist) throw new BadRequestException('user already exist');
+    const user = await this.prisma.user.create({
+      data: {
+        email: IGoogleResponse.email,
+        firstName: IGoogleResponse.firstName,
+        password: '',
       },
     });
 

@@ -17,7 +17,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  private async createTokents(id: string) {
+   async createTokents(id: string) {
     const payload = { id: id };
     const accessToken = await this.jwt.signAsync(payload, {
       expiresIn: '1h',
@@ -32,6 +32,10 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('no user');
     const isValid = await argon2.verify(user.password, authDto.password);
     if (!isValid) throw new UnauthorizedException('Invalid password');
+    return user;
+  }
+  async validateGoogleUser(email: string) {
+    const user = await this.userService.findOneByEmail(email);
     return user;
   }
 
