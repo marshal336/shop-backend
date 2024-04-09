@@ -25,7 +25,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-  ) {}
+  ) { }
 
   @Post('sign-up')
   @UsePipes(new ValidationPipe())
@@ -88,7 +88,7 @@ export class AuthController {
   @Get('google/log-in')
   @GoogleDecor()
   @ApiTags('google')
-  google() {}
+  google() { }
 
   @Get('log-in/redirect')
   @GoogleDecor()
