@@ -17,6 +17,30 @@ model User {
 
   createdAt DateTime? @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
+  comment   Comment[]
 
   @@map("user")
+}
+
+model cardItem {
+  id         String    @id @default(cuid())
+  flashSales String    @map("flash_sales")
+  title      String
+  logo       String
+  prices     String[]
+  star       Int
+  comments   Comment[]
+
+  @@map("card_item")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  title      String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String   @map("user_id")
+  cardItem   cardItem @relation(fields: [cardItemId], references: [id])
+  cardItemId String   @map("card_item_id")
+
+  @@map("comment")
 }
