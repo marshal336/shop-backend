@@ -1,10 +1,18 @@
 import { CreateAuthDto } from 'src/auth/dto/create-auth.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { OAuth2Client } from 'google-auth-library'
+
+
+const client = new OAuth2Client({
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET
+})
+
 
 @Injectable()
 export class AuthService {
@@ -15,9 +23,9 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwt: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
-   async createTokents(id: string) {
+  async createTokents(id: string) {
     const payload = { id: id };
     const accessToken = await this.jwt.signAsync(payload, {
       expiresIn: '1h',
@@ -34,11 +42,19 @@ export class AuthService {
     if (!isValid) throw new UnauthorizedException('Invalid password');
     return user;
   }
-  async validateGoogleUser(email: string) {
-    const user = await this.userService.findOneByEmail(email);
-    return user;
+  async google(token: string) {
+    const data = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.CLIENT_ID
+    })
+    const exist = await this.userService.findOneByEmail(data.getPayload().email)
+    if (exist) throw new BadRequestException('User Exist')
+    const user = await this.userService.createGoogle({
+      email: data.getPayload().email,
+      firstName: data.getPayload().name
+    })
+    return user
   }
-
   async register(createAuthDto: CreateAuthDto) {
     const hash = await argon2.hash(createAuthDto.password);
     const user = await this.userService.create(createAuthDto, hash);
@@ -60,7 +76,6 @@ export class AuthService {
     const tokens = await this.createTokents(user.id);
     return { ...user, ...tokens };
   }
-
   addRefreshTokenInCookie(res: Response, refreshToken: string) {
     const expiresIn = new Date();
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRES_TOKEN);

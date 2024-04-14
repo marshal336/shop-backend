@@ -35,11 +35,7 @@ export class CardService {
   }
   async getAll() {
     const card = await this.prisma.cardItem.findMany({
-      include: {
-        comments: {
-          include: { user: true }
-        }
-      }
+      include: { comments: true }
     })
     if (!card) throw new BadRequestException('no card')
 

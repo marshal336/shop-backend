@@ -15,9 +15,7 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { Request, Response } from 'express';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { GoogleDecor } from 'src/decorators/google.decorator';
 import { UserService } from 'src/user/user.service';
-import { User } from '@prisma/client';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -85,23 +83,11 @@ export class AuthController {
     return true;
   }
 
-  @Get('google/log-in')
-  @GoogleDecor()
+  @Post('google/log-in')
   @ApiTags('google')
-  google() { }
-
-  @Get('log-in/redirect')
-  @GoogleDecor()
-  @ApiTags('google')
-  async googleRedirect(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const user = req.user as User;
-    const { accessToken, refreshToken } = await this.authService.createTokents(
-      user.id,
-    );
-    this.authService.addRefreshTokenInCookie(res, refreshToken);
-    return { ...user, accessToken };
+  async google(@Body('token') token: string) {
+    return this.authService.google(token)
+    
   }
+
 }
