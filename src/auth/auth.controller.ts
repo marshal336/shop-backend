@@ -85,9 +85,10 @@ export class AuthController {
 
   @Post('google/log-in')
   @ApiTags('google')
-  async google(@Body('token') token: string) {
-    return this.authService.google(token)
-    
+  async google(@Body('token') token: string, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...user } = await this.authService.google(token)
+    this.authService.addRefreshTokenInCookie(res, refreshToken)
+    return { ...user }
   }
 
 }

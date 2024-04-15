@@ -53,7 +53,8 @@ export class AuthService {
       email: data.getPayload().email,
       firstName: data.getPayload().name
     })
-    return user
+    const tokens = await this.createTokents(user.id)
+    return { ...user, ...tokens }
   }
   async register(createAuthDto: CreateAuthDto) {
     const hash = await argon2.hash(createAuthDto.password);
