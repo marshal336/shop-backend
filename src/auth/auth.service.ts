@@ -35,26 +35,12 @@ export class AuthService {
     });
     return { accessToken, refreshToken };
   }
-  private async validateUser(authDto: CreateAuthDto) {
-    const user = await this.userService.findOneByEmail(authDto.email);
-    if (!user) throw new UnauthorizedException('no user');
-    const isValid = await argon2.verify(user.password, authDto.password);
+  async validateUser(email: string, password: string) {
+    const user = await this.userService.findOneByEmail(email);
+    if (!user) throw new UnauthorizedException('user not exists');
+    const isValid = await argon2.verify(user.password, password);
     if (!isValid) throw new UnauthorizedException('Invalid password');
     return user;
-  }
-  async google(token: string) {
-    const data = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.CLIENT_ID
-    })
-    const exist = await this.userService.findOneByEmail(data.getPayload().email)
-    if (exist) throw new BadRequestException('User Exist')
-    const user = await this.userService.createGoogle({
-      email: data.getPayload().email,
-      firstName: data.getPayload().name
-    })
-    const tokens = await this.createTokents(user.id)
-    return { ...user, ...tokens }
   }
   async register(createAuthDto: CreateAuthDto) {
     const hash = await argon2.hash(createAuthDto.password);
@@ -63,20 +49,19 @@ export class AuthService {
     const { password, ...fullUser } = user;
     return { ...fullUser, ...tokens };
   }
-  async login(createAuthDto: CreateAuthDto) {
-    const user = await this.validateUser(createAuthDto);
-    if (!user) throw new UnauthorizedException('No user');
+  async login(id: string) {
+    const user = await this.userService.findOneById(id)
     const tokens = await this.createTokents(user.id);
     const { password, ...fullUser } = user;
     return { ...fullUser, ...tokens };
   }
-  async newTokens(refreshToken: string) {
-    const token = await this.jwt.verifyAsync(refreshToken);
-    if (!token) throw new UnauthorizedException('invilide token');
-    const { password, ...user } = await this.userService.findOneById(token.id);
-    const tokens = await this.createTokents(user.id);
-    return { ...user, ...tokens };
-  }
+  // async newTokens(refreshToken: string) {
+  //   const token = await this.jwt.verifyAsync(refreshToken);
+  //   if (!token) throw new UnauthorizedException('invilide token');
+  //   const { password, ...user } = await this.userService.findOneById(token.id);
+  //   const tokens = await this.createTokents(user.id);
+  //   return { ...user, ...tokens };
+  // }
   addRefreshTokenInCookie(res: Response, refreshToken: string) {
     const expiresIn = new Date();
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRES_TOKEN);

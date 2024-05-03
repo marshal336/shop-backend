@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
-import { PrismaService } from 'prisma/prisma.service';
+import { User } from '../../prisma/@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAuthDto } from 'src/auth/dto/create-auth.dto';
 import { UserDto } from './dto/create-user.dto';
 import { hash } from 'argon2';
@@ -25,7 +25,7 @@ export class UserService {
 
     return user;
   }
-  async createGoogle({ email, firstName }: { email: string, firstName: string }): Promise<User> {
+  async createGoogle({ email, firstName }: { email: string, firstName: string }) {
     const user = await this.prisma.user.create({
       data: {
         email: email,
@@ -37,7 +37,7 @@ export class UserService {
     return user;
   }
 
-  async findOneByEmail(email: string): Promise<User> {
+  async findOneByEmail(email: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         email,
