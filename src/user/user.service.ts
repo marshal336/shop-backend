@@ -25,17 +25,6 @@ export class UserService {
 
     return user;
   }
-  async createGoogle({ email, firstName }: { email: string, firstName: string }) {
-    const user = await this.prisma.user.create({
-      data: {
-        email: email,
-        firstName: firstName,
-        password: '',
-      },
-    });
-
-    return user;
-  }
 
   async findOneByEmail(email: string) {
     const user = await this.prisma.user.findFirst({
@@ -58,15 +47,16 @@ export class UserService {
   }
 
   async update(id: string, dto: UserDto) {
-    let data = dto;
-    if (data.password) {
-      data = { ...dto, password: await hash(data.password) };
-    }
+    const exist = await this.prisma.user.findFirst({ where: { id } })
     const user = await this.prisma.user.update({
-      where: {
-        id,
-      },
-      data,
+      where: { id },
+      data: {
+        email: dto?.email ? dto.email : exist.email,
+        password: dto?.password ? await hash(dto.password) : exist.email,
+        firstName: dto?.firstName ? dto.firstName : exist.firstName,
+        lastName: dto?.lastName ? dto.lastName : exist.lastName,
+        address: dto?.address ? dto.address : exist.address,
+      }
     });
     const { password, ...fullUser } = user;
 

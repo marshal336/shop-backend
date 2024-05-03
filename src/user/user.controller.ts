@@ -16,13 +16,11 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 @ApiTags('user')
 @ApiBearerAuth()
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('profile')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({
-    type: UserDto,
-  })
+  @ApiOkResponse({ type: UserDto, })
   @Auth()
   async getProfile(@CurrentUser('id') id: string) {
     const { password, ...user } = await this.userService.findOneById(id);

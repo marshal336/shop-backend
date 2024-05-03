@@ -8,8 +8,6 @@ import {
   HttpStatus,
   Res,
   Req,
-  UnauthorizedException,
-  Get,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -35,11 +33,8 @@ export class AuthController {
     @Body() createAuthDto: CreateAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { refreshToken, ...user } =
-      await this.authService.register(createAuthDto);
-
+    const { refreshToken, ...user } = await this.authService.register(createAuthDto);
     this.authService.addRefreshTokenInCookie(res, refreshToken);
-
     return user;
   }
 
@@ -52,7 +47,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
   ) {
-
     const { refreshToken, ...user } =
       await this.authService.login(req.user as string);
     this.authService.addRefreshTokenInCookie(res, refreshToken);
@@ -60,25 +54,6 @@ export class AuthController {
     return user;
   }
 
-  // @Post('log-in/access-token')
-  // @UsePipes(new ValidationPipe())
-  // @HttpCode(HttpStatus.OK)
-  // async getNewToken(
-  //   @Req() req: Request,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const refreshTokenFromCookie = req.cookies[this.authService.TOKEN_NAME];
-  //   if (!refreshTokenFromCookie) {
-  //     this.authService.removeRefreshTokenInCookie(res);
-  //     throw new UnauthorizedException('No token');
-  //   }
-  //   const { refreshToken, ...user } = await this.authService.newTokens(
-  //     refreshTokenFromCookie,
-  //   );
-  //   this.authService.addRefreshTokenInCookie(res, refreshToken);
-
-  //   return user;
-  // }
 
   @Post('log-out')
   @UsePipes(new ValidationPipe())

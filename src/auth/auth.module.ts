@@ -5,7 +5,6 @@ import { UserModule } from 'src/user/user.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { OAuth2Client } from 'google-auth-library';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStatregy } from 'src/strategies/local.startegy';
 
@@ -24,6 +23,6 @@ import { LocalStatregy } from 'src/strategies/local.startegy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, OAuth2Client, LocalStatregy],
+  providers: [AuthService, LocalStatregy],
 })
 export class AuthModule {}

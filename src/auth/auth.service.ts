@@ -1,17 +1,10 @@
+import * as argon2 from 'argon2';
 import { CreateAuthDto } from 'src/auth/dto/create-auth.dto';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { OAuth2Client } from 'google-auth-library'
-
-
-const client = new OAuth2Client({
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET
-})
 
 
 @Injectable()
@@ -55,13 +48,6 @@ export class AuthService {
     const { password, ...fullUser } = user;
     return { ...fullUser, ...tokens };
   }
-  // async newTokens(refreshToken: string) {
-  //   const token = await this.jwt.verifyAsync(refreshToken);
-  //   if (!token) throw new UnauthorizedException('invilide token');
-  //   const { password, ...user } = await this.userService.findOneById(token.id);
-  //   const tokens = await this.createTokents(user.id);
-  //   return { ...user, ...tokens };
-  // }
   addRefreshTokenInCookie(res: Response, refreshToken: string) {
     const expiresIn = new Date();
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRES_TOKEN);
